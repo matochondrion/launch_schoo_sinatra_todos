@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'sinatra/reloader'
+require 'sinatra/content_for'
 require 'tilt/erubis'
 # use Rack::CommonLogger
 
@@ -49,4 +50,10 @@ post '/lists' do
     session[:success] = 'The list has been created.'
     redirect '/lists'
   end
+end
+
+get "/lists/:id" do
+  id = params[:id].to_i
+  @list = session[:lists][id]
+  erb :list, layout: :layout
 end
