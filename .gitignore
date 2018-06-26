@@ -1,0 +1,38 @@
+local/
+.DS_Store
+node_modules
+**.css.map
+notes.txt
+
+# Temporary files
+*.idlk #indesign
+/.tmp/
+
+# vim
+*~
+*.swp
+*.swo
+tags
+
+# npm-build-boilerplate
+dist
+node_modules
+npm-debug.log
+.sass-cache
+
+# Vagrant
+.vagrant
+*.log
+.ey_local_data
+./wordpress/
+/wordpress/
+/wp-tests/
+~
+
+# PHPStorm
+.idea/
+
+# Matplate
+
+# Dotfiles
+apparixrc*
