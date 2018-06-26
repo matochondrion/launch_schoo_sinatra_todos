@@ -37,6 +37,13 @@ def error_for_list_name(name)
   end
 end
 
+# Return an error message if the todo is invalid. Return nil if todo is valid.
+def error_for_todo(name)
+  if !(1..100).cover? name.size
+    'Todo must be between 1 and 100 characters.'
+  end
+end
+
 # Create a new list
 post '/lists' do
   list_name = params[:list_name].strip
@@ -53,12 +60,12 @@ post '/lists' do
 end
 
 get '/lists/:id' do
-  id = params[:id].to_i
-  @list = session[:lists][id]
+  @list_id = params[:id].to_i
+  @list = session[:lists][@list_id]
   erb :list, layout: :layout
 end
 
-# Edit an existing todo list
+# edit an existing todo list
 get "/lists/:id/edit" do
   id = params[:id].to_i
   @list = session[:lists][id]
@@ -87,4 +94,21 @@ post '/lists/:id/destroy' do
   session[:lists].delete_at id
   session[:success] = "The list has been deleted"
   redirect '/lists'
+end
+
+# Add a new todo to a list
+post '/lists/:list_id/todos' do
+  @list_id = params[:list_id].to_i
+  @list = session[:lists][@list_id]
+  text = params[:todo].strip
+
+  error = error_for_todo(text)
+  if error
+    session[:error] = error
+    erb :list, layout: :layout
+  else
+    @list[:todos] << {name: params[:todo], completed: false }
+    session[:success] = "The todo has been added."
+    redirect "/lists/#{@list_id}"
+  end
 end
