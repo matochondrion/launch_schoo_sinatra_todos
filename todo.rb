@@ -9,6 +9,48 @@ configure do
   set :session_secret, 'secret'
 end
 
+helpers do
+  def list_complete?(list)
+    todos_count(list) > 0 && todos_remaining_count(list) == 0
+  end
+
+  def list_class(list)
+    "complete" if list_complete?(list)
+  end
+
+  def todos_count(list)
+    list[:todos].size
+  end
+
+  def todos_remaining_count(list)
+    list[:todos].count { |todo| todo[:completed] == false }
+  end
+
+  def sort_lists(lists, &block)
+    incomplete_lists = {}
+    complete_lists = {}
+
+    complete_lists, incomplete_lists = lists.partition do |list|
+      list_complete?(list)
+    end
+
+    incomplete_lists.each { |list| yield list, lists.index(list) }
+    complete_lists.each { |list| yield list, lists.index(list) }
+  end
+
+  def sort_todos(todos, &block)
+    incomplete_todos = {}
+    complete_todos = {}
+
+    complete_todos, incomplete_todos = todos.partition do |todo|
+      todo[:completed]
+    end
+
+    incomplete_todos.each { |todo| yield todo, todos.index(todo) }
+    complete_todos.each { |todo| yield todo, todos.index(todo) }
+  end
+end
+
 before do
   session[:lists] ||= []
 end
@@ -111,4 +153,41 @@ post '/lists/:list_id/todos' do
     session[:success] = "The todo has been added."
     redirect "/lists/#{@list_id}"
   end
+end
+
+# Delete todo from a list
+post '/lists/:list_id/todos/:todo_id/destroy' do
+  @list_id = params[:list_id].to_i
+  @list = session[:lists][@list_id]
+  todo_id = params[:todo_id].to_i
+
+  @list[:todos].delete_at todo_id
+  session[:success] = 'The todo was deleted.'
+  redirect "/lists/#{@list_id}"
+end
+
+# Complete todo from a list
+post '/lists/:list_id/todos/:todo_id' do
+  @list_id = params[:list_id].to_i
+  @list = session[:lists][@list_id]
+  todo_id = params[:todo_id].to_i
+  todo = @list[:todos][todo_id]
+
+  is_completed = params[:completed] == "true"
+  todo[:completed] = is_completed
+  session[:success] = 'The todo is updated.'
+
+  redirect "/lists/#{@list_id}"
+end
+# Mark all todos as complete for a list
+post '/lists/:list_id/complete_all' do
+  @list_id = params[:list_id].to_i
+  @list = session[:lists][@list_id]
+
+  @list[:todos].each do |todo|
+    todo[:completed] = true
+  end
+
+  session[:success] = "All of the todos are complete."
+  redirect "/lists/#{@list_id}"
 end
