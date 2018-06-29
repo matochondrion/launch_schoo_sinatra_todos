@@ -29,7 +29,7 @@
 
         <h3><%= todo[:name] %></h3>
         <form action="/lists/<%= @list_id %>/todos/<%= index %>/destroy"
-          method="post" class="delete">
+          method="POST" class="delete">
           <button type="submit">Delete</button>
         </form>
       </li>
